@@ -48,25 +48,22 @@ def profile_view(request):
 
 	form = UserProfileForm(instance = up) 
 
-	if request.is_ajax():
-		form = UserProfileForm(data = request.POST, instance = up)
-		if form.is_valid():
-			obj = form.save()
-			obj.has_profile = True
-			obj.save()
-			result = "Success"
-			message = "Your profile has been updated"
-		else:
-			message = FormErrors(form)
+#if request.is_ajax():
+	form = UserProfileForm(data = request.POST, instance = up)
+	if form.is_valid():
+		obj = form.save()
+		obj.has_profile = True
+		obj.save()
+		result = "Success"
+		message = "Your profile has been updated"
+		message = FormErrors(form)
 		data = {'result': result, 'message': message}
 		return JsonResponse(data)
 
 	else:
-
 		context = {'form': form}
 		context['google_api_key'] = settings.GOOGLE_API_KEY
 		context['base_country'] = settings.BASE_COUNTRY
-
 		return render(request, 'users/profile.html', context)
 
 
@@ -89,10 +86,10 @@ class SignUpView(AjaxFormMixin, FormView):
 	#over write the mixin logic to get, check and save reCAPTURE score
 	def form_valid(self, form):
 		response = super(AjaxFormMixin, self).form_valid(form)	
-		if self.request.is_ajax():
-			token = form.cleaned_data.get('token')
-			captcha = reCAPTCHAValidation(token)
-			if captcha["success"]:
+		#if self.request.is_ajax():
+		token = form.cleaned_data.get('token')
+		captcha = reCAPTCHAValidation(token)
+		if captcha["success"]:
 				obj = form.save()
 				obj.email = obj.username
 				obj.save()
@@ -105,10 +102,8 @@ class SignUpView(AjaxFormMixin, FormView):
 				#change result & message on success
 				result = "Success"
 				message = "Thank you for signing up"
-
-				
-			data = {'result': result, 'message': message}
-			return JsonResponse(data)
+				data = {'result': result, 'message': message}
+				return JsonResponse(data)
 
 		return response
 
@@ -126,20 +121,21 @@ class SignInView(AjaxFormMixin, FormView):
 
 	def form_valid(self, form):
 		response = super(AjaxFormMixin, self).form_valid(form)	
-		if self.request.is_ajax():
-			username = form.cleaned_data.get('username')
-			password = form.cleaned_data.get('password')
+		#if self.request.is_ajax():
+		username = form.cleaned_data.get('username')
+		password = form.cleaned_data.get('password')
 			#attempt to authenticate user
-			user = authenticate(self.request, username=username, password=password)
-			if user is not None:
-				login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
-				result = "Success"
-				message = 'You are now logged in'
-			else:
-				message = FormErrors(form)
+		user = authenticate(self.request, username=username, password=password)
+		
+		if user is not None:
+			login(self.request, user, backend='django.contrib.auth.backends.ModelBackend')
+			result = "Success"
+			message = 'You are now logged in'
+		else:
+			message = FormErrors(form)
 			data = {'result': result, 'message': message}
 			return JsonResponse(data)
-		return response
+			return response
 
 
 
@@ -149,3 +145,7 @@ def sign_out(request):
 	'''
 	logout(request)
 	return redirect(reverse('users:sign-in'))
+
+
+
+
